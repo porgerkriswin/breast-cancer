@@ -181,7 +181,7 @@ breast-cancer/
 
 | Name | Role |
 | --- | --- |
-| porgerkriswin | Full-stack dev + AI integration |
+| porger kriswin | Full-stack dev + AI integration |
 | stefin nirmal | ML model + backend |
 | akash raj | UI/UX + frontend |
 | hrithik maries | Data & testing |
