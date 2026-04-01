@@ -185,7 +185,6 @@ breast-cancer/
 | stefin nirmal | ML model + backend |
 | akash raj | UI/UX + frontend |
 | hrithik maries | Data & testing |
-
 ---
 
 ## License
