@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BreastGuard AI — Early Detection Platform</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{background:#fff;color:#1a1a1a;padding:0.5rem}
+.hero{background:#fcebeb;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.hero h2{font-size:17px;font-weight:600;color:#501313}
+.hero p{font-size:12px;color:#791f1f;margin-top:2px}
+.hero-badge{background:#f09595;color:#501313;font-size:11px;padding:4px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.nav{display:flex;gap:4px;margin-bottom:1.25rem;flex-wrap:wrap}
+.nav-btn{padding:7px 14px;font-size:12px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;color:#666;transition:all 0.15s}
+.nav-btn.active{background:#e24b4a;color:#fff;border-color:#e24b4a;font-weight:600}
+.page{display:none}
+.page.active{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:#fff;border:1px solid #eee;border-radius:12px;padding:1rem 1.1rem;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:600;margin-bottom:10px}
+.metric{background:#f9f9f9;border-radius:8px;padding:10px;text-align:center}
+.metric-num{font-size:22px;font-weight:600}
+.metric-lbl{font-size:11px;color:#888;margin-top:2px}
+label{font-size:12px;color:#666;display:block;margin-bottom:3px}
+select,input[type=number],input[type=text]{width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a;outline:none;margin-bottom:10px}
+select:focus,input:focus{border-color:#e24b4a}
+.chip{display:inline-block;padding:5px 11px;border:1px solid #ddd;border-radius:20px;font-size:12px;cursor:pointer;background:#fff;color:#666;margin:3px;transition:all 0.15s;user-select:none}
+.chip.on{background:#fcebeb;border-color:#e24b4a;color:#791f1f;font-weight:600}
+.btn-primary{width:100%;padding:11px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:#a32d2d;color:#fff;transition:opacity 0.2s;margin-top:6px}
+.btn-primary:hover{opacity:0.85}
+.btn-sec{padding:8px 16px;border:1px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;background:#fff;color:#1a1a1a;transition:all 0.15s}
+.btn-sec:hover{background:#f5f5f5}
+.risk-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:20px;font-size:13px;font-weight:600}
+.r-low{background:#eaf3de;color:#27500a}
+.r-mod{background:#faeeda;color:#633806}
+.r-high{background:#fcebeb;color:#791f1f}
+.r-vhigh{background:#f09595;color:#501313}
+.dot8{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.track{height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;margin:10px 0 4px}
+.fill{height:100%;border-radius:5px;transition:width 0.7s cubic-bezier(.4,0,.2,1)}
+.meter-lbls{display:flex;justify-content:space-between;font-size:10px;color:#999}
+.step-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.step-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;margin-top:1px}
+.si-ok{background:#eaf3de;color:#3b6d11}
+.si-warn{background:#faeeda;color:#854f0b}
+.si-alert{background:#fcebeb;color:#a32d2d}
+.si-info{background:#e6f1fb;color:#0c447c}
+.step-text{font-size:13px;line-height:1.55;color:#1a1a1a}
+.infobox{background:#e6f1fb;border-left:3px solid #378add;border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;color:#0c447c;line-height:1.6;margin-top:10px}
+.warn-box{background:#faeeda;border-left:3px solid #ba7517;border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;color:#633806;line-height:1.6;margin-top:10px}
+.alert-box{background:#fcebeb;border-left:3px solid #e24b4a;border-radius:0 8px 8px 0;padding:10px 12px;font-size:12px;color:#791f1f;line-height:1.6;margin-top:10px}
+.progress-wrap{margin-bottom:14px}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.progress-label span:first-child{color:#666}
+.progress-label span:last-child{font-weight:600;color:#1a1a1a}
+.htiny{height:7px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.htiny-fill{height:100%;border-radius:4px}
+.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.sym-item{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-size:12px;transition:all 0.15s;line-height:1.4}
+.sym-item.on{border-color:#e24b4a;background:#fcebeb;color:#791f1f}
+.sym-dot{width:7px;height:7px;border-radius:50%;background:#ddd;flex-shrink:0}
+.sym-item.on .sym-dot{background:#e24b4a}
+.chat-history{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.msg-user{align-self:flex-end;background:#fcebeb;color:#791f1f;padding:8px 12px;border-radius:12px 12px 2px 12px;font-size:13px;max-width:85%}
+.msg-ai{align-self:flex-start;background:#f5f5f5;color:#1a1a1a;padding:8px 12px;border-radius:12px 12px 12px 2px;font-size:13px;max-width:90%;line-height:1.55}
+.chat-input-row{display:flex;gap:8px;align-items:center}
+.chat-input-row input{flex:1;margin-bottom:0}
+.send-btn{padding:8px 14px;background:#a32d2d;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;white-space:nowrap}
+.timeline{position:relative;padding-left:24px}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-dot{position:absolute;left:-24px;top:3px;width:10px;height:10px;border-radius:50%;border:2px solid}
+.tl-dot-ok{background:#eaf3de;border-color:#639922}
+.tl-dot-warn{background:#faeeda;border-color:#ba7517}
+.tl-dot-alert{background:#fcebeb;border-color:#e24b4a}
+.tl-line{position:absolute;left:-20px;top:13px;bottom:-16px;width:2px;background:#eee}
+.tl-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.tl-sub{font-size:12px;color:#666;line-height:1.5}
+.disclaimer{font-size:11px;color:#999;text-align:center;margin-top:1rem;padding-top:10px;border-top:1px solid #eee;line-height:1.5}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.tag-ai{background:#eeedfe;color:#3c3489}
+.tag-live{background:#eaf3de;color:#27500a}
+.section-lbl{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;margin-top:4px}
+.typing-dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:#e24b4a;margin:0 1px;animation:td 1s infinite}
+.typing-dots span:nth-child(2){animation-delay:0.2s}
+.typing-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes td{0%,100%{opacity:0.2;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}.sym-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div>
+    <h2>BreastGuard AI — Early Detection Platform</h2>
+    <p>Clinical risk engine · Symptom analysis · AI consultation · Screening planner</p>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    <span class="hero-badge">Applied AI Hackathon</span>
+    <span class="tag tag-ai">AI-powered</span>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="goPage('risk')">Risk engine</button>
+  <button class="nav-btn" onclick="goPage('symptoms')">Symptom checker</button>
+  <button class="nav-btn" onclick="goPage('ai')">AI consultation</button>
+  <button class="nav-btn" onclick="goPage('plan')">Screening plan</button>
+  <button class="nav-btn" onclick="goPage('stats')">Stats</button>
+</div>
+
+<!-- RISK ENGINE -->
+<div class="page active" id="page-risk">
+  <div class="grid2">
+    <div>
+      <div class="card-title">Patient profile</div>
+      <label>Age</label><input type="number" id="age" placeholder="e.g. 42" min="18" max="90">
+      <label>BMI</label><input type="number" id="bmi" placeholder="e.g. 26.5" step="0.1">
+      <label>First menstrual period</label>
+      <select id="menarche">
+        <option value="">Select</option>
+        <option value="3">Before age 12 (early)</option>
+        <option value="0">Age 12–14 (typical)</option>
+        <option value="-1">After age 14 (late)</option>
+      </select>
+      <label>Menopause status</label>
+      <select id="meno">
+        <option value="">Select</option>
+        <option value="0">Pre-menopausal</option>
+        <option value="2">Post-menopausal</option>
+        <option value="4">Post-menopausal after 55</option>
+      </select>
+      <label>Pregnancies</label>
+      <select id="preg">
+        <option value="">Select</option>
+        <option value="-3">2+ children, breastfed</option>
+        <option value="0">1+ children</option>
+        <option value="3">No children</option>
+      </select>
+      <label>Hormone therapy (HRT)</label>
+      <select id="hrt">
+        <option value="">Select</option>
+        <option value="0">Never used</option>
+        <option value="3">Used less than 5 years</option>
+        <option value="7">Used 5+ years</option>
+      </select>
+    </div>
+    <div>
+      <div class="card-title">Risk factors</div>
+      <div class="section-lbl">Family history</div>
+      <div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="0">No family history</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="8">Grandmother / aunt</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="15">Mother or sister</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="25">BRCA1/2 confirmed</div>
+      </div>
+      <div class="section-lbl" style="margin-top:10px">Lifestyle</div>
+      <div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="5">Smoker</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="5">Alcohol use</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="4">Sedentary</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="-6">Regular exercise</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="8">Dense breast tissue</div>
+      </div>
+      <div class="section-lbl" style="margin-top:10px">Medical history</div>
+      <div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="8">Prior breast biopsy</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="15">Atypical hyperplasia</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="12">Chest radiation</div>
+        <div class="chip" onclick="this.classList.toggle('on')" data-val="10">Previous breast cancer</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="calcRisk()">Run clinical risk analysis</button>
+  <div id="risk-result" style="display:none;margin-top:1.25rem">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <div>
+          <div style="font-size:12px;color:#666;margin-bottom:4px">Overall risk level</div>
+          <div class="risk-pill" id="risk-pill"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:24px;font-weight:600" id="score-big"></div>
+          <div style="font-size:11px;color:#999">composite score / 100</div>
+        </div>
+      </div>
+      <div class="track"><div class="fill" id="risk-bar"></div></div>
+      <div class="meter-lbls"><span>Low</span><span>Moderate</span><span>High</span><span>Very high</span></div>
+      <div style="font-size:13px;color:#666;margin-top:10px;line-height:1.6" id="risk-desc"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Risk factor breakdown</div>
+      <div id="factor-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Personalised recommendations</div>
+      <div id="reco-list"></div>
+    </div>
+    <div class="disclaimer">This tool uses a Gail Model-inspired heuristic. Not a clinical diagnosis. Always consult a licensed medical professional.</div>
+  </div>
+</div>
+
+<!-- SYMPTOMS -->
+<div class="page" id="page-symptoms">
+  <div class="card">
+    <div class="card-title">Select any symptoms you have noticed</div>
+    <div style="font-size:12px;color:#666;margin-bottom:10px">Tap all that apply. Even subtle changes should be evaluated.</div>
+    <div class="sym-grid">
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Lump in breast or underarm</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Change in size or shape</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Nipple discharge</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Skin dimpling or puckering</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Nipple inversion</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Redness or rash on skin</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Persistent breast pain</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Thickening of breast tissue</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Swelling of all or part</div>
+      <div class="sym-item" onclick="this.classList.toggle('on');this.querySelector('.sym-dot').style.background=this.classList.contains('on')?'#e24b4a':''"><div class="sym-dot"></div>Flaking or peeling of nipple</div>
+    </div>
+    <button class="btn-primary" style="margin-top:12px" onclick="evalSymptoms()">Evaluate symptoms</button>
+  </div>
+  <div id="sym-result" style="display:none">
+    <div class="card">
+      <div class="risk-pill" id="sym-pill" style="margin-bottom:8px"></div>
+      <div style="font-size:13px;line-height:1.6" id="sym-msg"></div>
+      <div id="sym-next" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">5-step self-exam guide</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-dot tl-dot-ok"></div><div class="tl-line"></div><div class="tl-title">Mirror check — arms on hips</div><div class="tl-sub">Look for swelling, dimpling, or shape changes.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-dot-ok"></div><div class="tl-line"></div><div class="tl-title">Mirror check — arms raised</div><div class="tl-sub">Check for the same changes from a different angle.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-dot-ok"></div><div class="tl-line"></div><div class="tl-title">Lying down feel</div><div class="tl-sub">Use finger pads in circular motions covering the full breast and armpit.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-dot-ok"></div><div class="tl-line"></div><div class="tl-title">Nipple check</div><div class="tl-sub">Gently squeeze to check for any discharge.</div></div>
+        <div class="tl-item"><div class="tl-dot tl-dot-ok"></div><div class="tl-title">Standing feel</div><div class="tl-sub">Repeat circular pattern while standing, ideally in the shower.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI CONSULTATION -->
+<div class="page" id="page-ai">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <div style="width:32px;height:32px;border-radius:50%;background:#fcebeb;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#791f1f">AI</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">Dr. Aria — AI health assistant</div>
+        <div style="font-size:11px;color:#666">Specialised in breast health · Not a substitute for clinical care</div>
+      </div>
+      <span class="tag tag-live" style="margin-left:auto">Live</span>
+    </div>
+    <div style="border-top:1px solid #eee;margin:10px 0"></div>
+    <div class="chat-history" id="chat-history">
+      <div class="msg-ai">Hello! I'm Dr. Aria, your AI breast health assistant. I can answer questions about breast cancer risk, symptoms, screening schedules, and prevention. How can I help you today?</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Ask about risk, symptoms, screening..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="send-btn" onclick="sendChat()">Send</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+      <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="quickQ('What are early signs of breast cancer?')">Early signs</button>
+      <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="quickQ('How often should I get a mammogram?')">Mammogram</button>
+      <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="quickQ('How does BRCA mutation affect my risk?')">BRCA mutation</button>
+      <button class="btn-sec" style="font-size:11px;padding:5px 10px" onclick="quickQ('What lifestyle changes reduce breast cancer risk?')">Prevention</button>
+    </div>
+  </div>
+  <div class="disclaimer">AI responses are informational only. Always consult a qualified oncologist for medical decisions.</div>
+</div>
+
+<!-- SCREENING PLAN -->
+<div class="page" id="page-plan">
+  <div class="card">
+    <div class="card-title">Generate my personalised screening plan</div>
+    <div class="grid2">
+      <div><label>Your age</label><input type="number" id="plan-age" placeholder="e.g. 38"></div>
+      <div>
+        <label>Risk level</label>
+        <select id="plan-risk">
+          <option value="">Select</option>
+          <option value="low">Low</option>
+          <option value="mod">Moderate</option>
+          <option value="high">High</option>
+          <option value="vhigh">Very high / BRCA+</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="genPlan()">Generate screening plan</button>
+  </div>
+  <div id="plan-result" style="display:none">
+    <div class="card">
+      <div class="card-title">Your screening timeline</div>
+      <div class="timeline" id="plan-timeline"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">What each test involves</div>
+      <div class="step-row"><div class="step-icon si-info">M</div><div class="step-text"><strong>Mammogram</strong> — Low-dose X-ray. Takes ~20 min. Detects lumps before they can be felt.</div></div>
+      <div class="step-row"><div class="step-icon si-info">U</div><div class="step-text"><strong>Ultrasound</strong> — Distinguishes solid vs fluid-filled lumps. Used alongside mammogram.</div></div>
+      <div class="step-row"><div class="step-icon si-info">R</div><div class="step-text"><strong>MRI</strong> — Most sensitive scan. Recommended for high-risk individuals. No radiation.</div></div>
+      <div class="step-row"><div class="step-icon si-info">C</div><div class="step-text"><strong>Clinical exam</strong> — Physical examination by a trained clinician.</div></div>
+      <div class="step-row"><div class="step-icon si-info">G</div><div class="step-text"><strong>Genetic test</strong> — Blood test for BRCA1/BRCA2 mutations.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="page" id="page-stats">
+  <div class="grid3" style="margin-bottom:12px">
+    <div class="metric"><div class="metric-num" style="color:#e24b4a">2.3M</div><div class="metric-lbl">New cases / year worldwide</div></div>
+    <div class="metric"><div class="metric-num" style="color:#639922">99%</div><div class="metric-lbl">5-yr survival if detected early</div></div>
+    <div class="metric"><div class="metric-num" style="color:#185fa5">1 in 8</div><div class="metric-lbl">Women affected in lifetime</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Survival rate by stage at detection</div>
+    <div id="survival-bars"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Risk reduction strategies</div>
+    <div class="step-row"><div class="step-icon si-ok">↓</div><div class="step-text">Regular exercise (150+ min/week) reduces risk by up to 21%</div></div>
+    <div class="step-row"><div class="step-icon si-ok">↓</div><div class="step-text">Breastfeeding for 12+ months provides measurable long-term protective effect</div></div>
+    <div class="step-row"><div class="step-icon si-ok">↓</div><div class="step-text">Maintaining healthy BMI significantly lowers post-menopausal risk</div></div>
+    <div class="step-row"><div class="step-icon si-ok">↓</div><div class="step-text">Limiting alcohol to fewer than 1 drink/day lowers risk by ~7%</div></div>
+    <div class="step-row"><div class="step-icon si-warn">!</div><div class="step-text">Combined HRT use for 5+ years increases risk — discuss alternatives with your doctor</div></div>
+  </div>
+</div>
+
+<script>
+const pages=['risk','symptoms','ai','plan','stats'];
+function goPage(name){
+  pages.forEach(p=>{document.getElementById('page-'+p).classList.toggle('active',p===name)});
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>{b.classList.toggle('active',pages[i]===name)});
+  if(name==='stats')buildSurvivalBars();
+}
+
+function calcRisk(){
+  let s=0;
+  const age=parseInt(document.getElementById('age').value)||0;
+  const bmi=parseFloat(document.getElementById('bmi').value)||0;
+  s+=age>=70?25:age>=60?22:age>=50?18:age>=40?12:age>=30?5:2;
+  s+=bmi>=35?12:bmi>=30?8:bmi>=25?4:0;
+  s+=parseInt(document.getElementById('menarche').value)||0;
+  s+=parseInt(document.getElementById('meno').value)||0;
+  s+=parseInt(document.getElementById('preg').value)||0;
+  s+=parseInt(document.getElementById('hrt').value)||0;
+  document.querySelectorAll('.chip.on').forEach(c=>{s+=parseInt(c.dataset.val||0)});
+  s=Math.max(0,Math.min(100,Math.round(s)));
+
+  let lvl,cls,fill,fillColor,desc;
+  if(s<25){lvl='Low risk';cls='r-low';fill=Math.round(s/25*22);fillColor='#639922';desc='Your profile shows relatively few risk factors. Continue monthly self-exams and follow standard screening guidelines for your age.'}
+  else if(s<50){lvl='Moderate risk';cls='r-mod';fill=22+Math.round((s-25)/25*26);fillColor='#ba7517';desc='Some risk factors are elevated. Schedule a clinical breast exam annually and discuss mammogram timing with your doctor.'}
+  else if(s<75){lvl='High risk';cls='r-high';fill=48+Math.round((s-50)/25*26);fillColor='#e24b4a';desc='Multiple significant risk factors detected. Consider genetic counselling and annual MRI.'}
+  else{lvl='Very high risk';cls='r-vhigh';fill=74+Math.round((s-75)/25*26);fillColor='#a32d2d';desc='Serious cumulative risk factors present. Urgent referral to a breast specialist is strongly recommended.'}
+
+  document.getElementById('risk-pill').className='risk-pill '+cls;
+  document.getElementById('risk-pill').innerHTML='<div class="dot8" style="background:'+fillColor+'"></div>'+lvl;
+  document.getElementById('score-big').textContent=s+' / 100';
+  document.getElementById('risk-bar').style.width=Math.min(fill,100)+'%';
+  document.getElementById('risk-bar').style.background=fillColor;
+  document.getElementById('risk-desc').textContent=desc;
+
+  const ageScore=age>=70?25:age>=60?22:age>=50?18:age>=40?12:age>=30?5:2;
+  const bmiScore=bmi>=35?12:bmi>=30?8:bmi>=25?4:0;
+  const factors=[
+    {lbl:'Age',val:ageScore,max:25,color:'#e24b4a'},
+    {lbl:'BMI',val:bmiScore,max:12,color:'#ba7517'},
+    {lbl:'Hormonal history',val:Math.max(0,(parseInt(document.getElementById('menarche').value)||0)+(parseInt(document.getElementById('meno').value)||0)+(parseInt(document.getElementById('hrt').value)||0)),max:14,color:'#185fa5'},
+  ];
+  document.getElementById('factor-bars').innerHTML=factors.map(f=>'<div class="progress-wrap"><div class="progress-label"><span>'+f.lbl+'</span><span>'+Math.min(f.val,f.max)+'</span></div><div class="htiny"><div class="htiny-fill" style="width:'+Math.min(100,Math.round(f.val/f.max*100))+'%;background:'+f.color+'"></div></div></div>').join('');
+
+  const recos=[];
+  if(s>=75)recos.push({t:'alert',i:'!',m:'Seek urgent referral to a breast oncology specialist immediately.'});
+  if(s>=50)recos.push({t:'alert',i:'!',m:'Begin annual MRI + mammogram programme without delay.'});
+  if(s>=25)recos.push({t:'warn',i:'i',m:'Clinical breast exam every 12 months is strongly recommended.'});
+  recos.push({t:'ok',i:'✓',m:'Perform a breast self-exam every month.'});
+  recos.push({t:'ok',i:'✓',m:'Aim for 150+ minutes of moderate aerobic activity per week.'});
+  recos.push({t:'ok',i:'✓',m:'Limit alcohol to fewer than 1 standard drink per day.'});
+  const clsMap={ok:'si-ok',warn:'si-warn',alert:'si-alert'};
+  document.getElementById('reco-list').innerHTML=recos.map(r=>'<div class="step-row"><div class="step-icon '+clsMap[r.t]+'">'+r.i+'</div><div class="step-text">'+r.m+'</div></div>').join('');
+  document.getElementById('risk-result').style.display='block';
+  document.getElementById('risk-result').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function evalSymptoms(){
+  const items=[...document.querySelectorAll('.sym-item.on')];
+  const n=items.length;
+  let pill,cls,msg,next='';
+  if(n===0){pill='No symptoms selected';cls='r-low';msg='No symptoms reported. Continue monthly self-exams and keep up with regular screening.';}
+  else if(n<=2){pill='Symptoms noted — monitor';cls='r-mod';msg='You selected '+n+' symptom(s). While many breast changes are benign, we recommend a clinical evaluation within 2–4 weeks.';next='<div class="warn-box">Book a GP or gynaecologist appointment within 2–4 weeks.</div>';}
+  else{pill='Multiple symptoms — act promptly';cls='r-high';msg='You reported '+n+' symptoms. Please seek medical attention as soon as possible.';next='<div class="alert-box">Contact your doctor today or visit the nearest breast health clinic.</div>';}
+  document.getElementById('sym-pill').className='risk-pill '+cls;
+  document.getElementById('sym-pill').innerHTML=pill;
+  document.getElementById('sym-msg').textContent=msg;
+  document.getElementById('sym-next').innerHTML=next;
+  document.getElementById('sym-result').style.display='block';
+}
+
+const KB={
+  signs:'Early warning signs include a new lump or thickening in the breast or armpit, change in breast size or shape, skin dimpling, nipple inversion or discharge, redness or orange-peel skin texture, and persistent pain in one area. Many of these have benign causes, but all should be evaluated by a doctor. Would you like to know more about any specific symptom?',
+  mammogram:'For average-risk women: clinical exam every 3 years in your 20s–30s, annual mammogram from age 40–50, and every 1–2 years from 50+. High-risk individuals (BRCA+, strong family history) should begin annual mammogram + MRI from age 25–30. Would you like to know what a mammogram involves?',
+  brca:'Women with a BRCA1 mutation have a 55–72% lifetime breast cancer risk; BRCA2 carriers have 45–69% risk compared to the average of ~13%. BRCA+ individuals are recommended annual MRI + mammogram from age 25–30 and genetic counselling is strongly advised. Would you like to know about genetic testing?',
+  lifestyle:'Evidence-backed strategies include regular exercise (150+ min/week), maintaining a healthy BMI especially post-menopause, limiting alcohol to fewer than 1 drink/day, breastfeeding if possible, and eating a diet high in vegetables and fibre. Would you like a personalised prevention plan?',
+  default:'That is a great question about breast health. The most important things you can do are know your body, attend regular screenings, and consult a doctor about any changes. I am happy to go deeper on any specific topic — just ask! What would you like to know more about?'
+};
+
+function matchKB(q){
+  q=q.toLowerCase();
+  if(q.includes('sign')||q.includes('symptom')||q.includes('early'))return KB.signs;
+  if(q.includes('mammogram')||q.includes('screening')||q.includes('often'))return KB.mammogram;
+  if(q.includes('brca')||q.includes('gene')||q.includes('mutation'))return KB.brca;
+  if(q.includes('lifestyle')||q.includes('prevent')||q.includes('reduce')||q.includes('exercise'))return KB.lifestyle;
+  return KB.default;
+}
+
+const chatEl=()=>document.getElementById('chat-history');
+function appendMsg(cls,txt){const d=document.createElement('div');d.className=cls;d.textContent=txt;chatEl().appendChild(d);chatEl().scrollTop=chatEl().scrollHeight;}
+function appendRaw(cls,html){const d=document.createElement('div');d.className=cls;d.innerHTML=html;chatEl().appendChild(d);chatEl().scrollTop=chatEl().scrollHeight;return d;}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-input');
+  const q=inp.value.trim();if(!q)return;
+  inp.value='';
+  appendMsg('msg-user',q);
+  const thinking=appendRaw('msg-ai','<div class="typing-dots"><span></span><span></span><span></span></div>');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,system:'You are Dr. Aria, a compassionate AI breast health assistant. Answer questions about breast cancer risk, symptoms, screening, and prevention. Keep responses to 3-4 sentences. Never diagnose. Always recommend consulting a doctor. End with a follow-up question.',messages:[{role:'user',content:q}]})});
+    const data=await res.json();
+    const reply=data.content?.map(c=>c.text||'').join('')||matchKB(q);
+    thinking.textContent=reply;
+  }catch(e){thinking.textContent=matchKB(q);}
+  chatEl().scrollTop=chatEl().scrollHeight;
+}
+
+function quickQ(q){document.getElementById('chat-input').value=q;sendChat();}
+
+function genPlan(){
+  const age=parseInt(document.getElementById('plan-age').value)||0;
+  const risk=document.getElementById('plan-risk').value;
+  if(!age||!risk){alert('Please enter your age and risk level.');return;}
+  const items=[];
+  if(risk==='vhigh'){
+    items.push({dot:'tl-dot-alert',title:'Genetic counselling — now',sub:'BRCA1/2 blood test + consultation with a genetic counsellor.'});
+    items.push({dot:'tl-dot-alert',title:'Annual MRI + mammogram — immediately',sub:'High-sensitivity imaging every year starting now.'});
+    items.push({dot:'tl-dot-warn',title:'Clinical breast exam — every 6 months',sub:'Biannual check by a trained clinician.'});
+    items.push({dot:'tl-dot-ok',title:'Monthly self-exam',sub:'Know what is normal for your body.'});
+  }else if(risk==='high'){
+    items.push({dot:'tl-dot-alert',title:'Annual mammogram — starting now',sub:'If under 40, discuss MRI supplementation with your doctor.'});
+    items.push({dot:'tl-dot-warn',title:'Clinical breast exam — every 12 months',sub:'Annual physical exam alongside imaging.'});
+    items.push({dot:'tl-dot-ok',title:'Genetic testing consideration',sub:'Discuss BRCA testing if you have first-degree relatives with breast cancer.'});
+    items.push({dot:'tl-dot-ok',title:'Monthly self-exam',sub:'Report any change promptly.'});
+  }else if(risk==='mod'){
+    items.push({dot:'tl-dot-warn',title:'Mammogram — starting age '+(Math.max(40,age)),sub:'Annual from age '+Math.max(40,age)+'.'});
+    items.push({dot:'tl-dot-ok',title:'Clinical breast exam — annually from 40',sub:'Every 3 years in your 20s–30s.'});
+    items.push({dot:'tl-dot-ok',title:'Monthly self-exam',sub:'Best done 3–5 days after period ends.'});
+  }else{
+    items.push({dot:'tl-dot-ok',title:'Clinical breast exam — every 3 years',sub:'Annual from age 40 onwards.'});
+    items.push({dot:'tl-dot-ok',title:'Mammogram — starting age 40–50',sub:'Discuss exact start with your doctor.'});
+    items.push({dot:'tl-dot-ok',title:'Monthly self-exam',sub:'Know your normal. Report any changes immediately.'});
+  }
+  document.getElementById('plan-timeline').innerHTML=items.map((it,i)=>'<div class="tl-item"><div class="tl-dot '+it.dot+'"></div>'+(i<items.length-1?'<div class="tl-line"></div>':'')+'<div class="tl-title">'+it.title+'</div><div class="tl-sub">'+it.sub+'</div></div>').join('');
+  document.getElementById('plan-result').style.display='block';
+}
+
+let survivalBuilt=false;
+function buildSurvivalBars(){
+  if(survivalBuilt)return;survivalBuilt=true;
+  const data=[{stage:'Stage 0 (DCIS)',rate:99,color:'#639922'},{stage:'Stage I',rate:99,color:'#639922'},{stage:'Stage II',rate:86,color:'#ba7517'},{stage:'Stage III',rate:57,color:'#e24b4a'},{stage:'Stage IV',rate:29,color:'#a32d2d'}];
+  document.getElementById('survival-bars').innerHTML=data.map(d=>'<div class="progress-wrap"><div class="progress-label"><span>'+d.stage+'</span><span style="color:'+d.color+'">'+d.rate+'%</span></div><div class="htiny"><div class="htiny-fill" style="width:'+d.rate+'%;background:'+d.color+'"></div></div></div>').join('');
+}
+</script>
+</body>
+</html>
